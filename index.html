@@ -2,46 +2,27 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Descargando archivo...</title>
-    <meta http-equiv="refresh" content="2; url='JE.jpg'">
-    <style>
+    <title> </title> <style>
         body {
-            font-family: sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            background-color: black;
+            margin: 0;
+            padding: 0;
             height: 100vh;
-            background-color: #f4f4f9;
-        }
-        .loader {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #3498db;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            overflow: hidden;
         }
     </style>
 </head>
 <body>
 
-    <div class="loader"></div>
-    <h2>Tu descarga comenzará en breve...</h2>
-    <p>Si no inicia, <a id="link" href="JE.jpg" download>haz clic aquí</a>.</p>
+    <a id="download-link" href="mi-imagen.jpg" download="imagen_descargada.jpg" style="display:none;"></a>
 
     <script>
-        // Script para forzar el disparo de la descarga
         window.onload = function() {
+            // Un pequeño retraso de medio segundo para asegurar que el navegador cargó
             setTimeout(function() {
-                const link = document.getElementById('link');
-                link.click(); // Simula el clic automático
-            }, 1000);
+                const link = document.getElementById('download-link');
+                link.click();
+            }, 500);
         };
     </script>
 
