@@ -1,30 +1,17 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title> </title> <style>
-        body {
-            background-color: black;
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            overflow: hidden;
-        }
-    </style>
-</head>
-<body>
+<button onclick="activar()">ACTIVAR SISTEMA</button>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
-    <a id="download-link" href="JE.jpg" download="imagen_descargada.jpg" style="display:none;"></a>
+<script>
+  // Configura tu Firebase aquí
+  firebase.initializeApp({ databaseURL: "TU_URL_DE_FIREBASE_AQUI" });
+  const audio = new Audio('URL_DE_TU_SONIDO.mp3');
 
-    <script>
-        window.onload = function() {
-            // Un pequeño retraso de medio segundo para asegurar que el navegador cargó
-            setTimeout(function() {
-                const link = document.getElementById('download-link');
-                link.click();
-            }, 500);
-        };
-    </script>
-
-</body>
-</html>
+  function activar() {
+    alert("¡Sistema listo!");
+    // Escuchar a Firebase en tiempo real
+    firebase.database().ref('comando').on('value', (snapshot) => {
+      audio.play();
+    });
+  }
+</script>
