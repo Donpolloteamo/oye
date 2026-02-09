@@ -1,0 +1,13 @@
+{
+  "name": "bot-telegram-sonido",
+  "version": "1.0.0",
+  "description": "Bot para activar sonidos remotamente",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "dependencies": {
+    "node-telegram-bot-api": "^0.64.0",
+    "firebase-admin": "^12.0.0"
+  }
+}
