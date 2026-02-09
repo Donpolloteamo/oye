@@ -16,38 +16,42 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
     <script>
-        const firebaseConfig = { databaseURL: "https://sound-nfc-default-rtdb.firebaseio.com/" };
+        const firebaseConfig = { databaseURL: "TU_URL_DE_FIREBASE_AQUI" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         
-        // Creamos el objeto de audio
-        const audio = new Audio('mambo.mp3');
+        // Diccionario de sonidos
+        const sonidos = {
+            'mambo': new Audio('mambo.mp3'),
+            'sonido1': new Audio('sonido1.mp3'),
+            'sonido2': new Audio('sonido2.mp3'),
+            'sonido3': new Audio('sonido3.mp3'),
+            'sonido4': new Audio('sonido4.mp3'),
+            'sonido5': new Audio('sonido5.mp3')
+        };
+
         let sistemaListo = false;
 
         function conectar() {
             if (sistemaListo) return;
 
-            // PRIMER TOQUE: Forzamos la carga y reproducción momentánea
-            audio.play().then(() => {
-                audio.pause();
-                audio.currentTime = 0;
-                sistemaListo = true;
-                console.log("Sistema armado y listo para sonar");
-                // Cambiamos el color un segundo para saber que funcionó el toque
-                document.body.style.backgroundColor = "#050505"; 
-            }).catch(error => console.log("Error al pedir permiso:", error));
+            // Desbloqueamos todos los sonidos en silencio al tocar
+            Object.values(sonidos).forEach(s => {
+                s.volume = 0;
+                s.play().then(() => { s.pause(); s.currentTime = 0; s.volume = 1; });
+            });
 
-            // Escuchamos a Firebase
+            sistemaListo = true;
+            document.body.style.backgroundColor = "#080808";
+            console.log("Sistema multisonido listo.");
+
+            // Escuchar señal con el nombre del archivo
             db.ref('comando').on('value', (snapshot) => {
                 const data = snapshot.val();
-                if (sistemaListo && data && data.accion === 'reproducir') {
-                    // Forzamos la reproducción inmediata
-                    const playPromise = audio.play();
-                    if (playPromise !== undefined) {
-                        playPromise.catch(error => {
-                            console.log("El navegador bloqueó el audio al recibir la señal:", error);
-                        });
-                    }
+                if (sistemaListo && data && sonidos[data.archivo]) {
+                    const audio = sonidos[data.archivo];
+                    audio.currentTime = 0;
+                    audio.play().catch(e => console.error(e));
                 }
             });
         }
