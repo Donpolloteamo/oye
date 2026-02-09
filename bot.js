@@ -1,15 +1,10 @@
 const TelegramBot = require('node-telegram-bot-api');
 const admin = require('firebase-admin');
-const http = require('http'); // Necesario para el plan gratis
+const http = require('http');
 
-// --- 1. ENGAÑO PARA RENDER (SERVIDOR WEB MINIMO) ---
-const server = http.createServer((req, res) => {
-  res.writeHead(200, {'Content-Type': 'text/plain'});
-  res.end('Bot vivo\n');
-});
-server.listen(process.env.PORT || 10000); // Render usa el puerto 10000 por defecto
+// Engaño para Render (Plan Gratis)
+http.createServer((req, res) => { res.end('Bot Vivo'); }).listen(process.env.PORT || 10000);
 
-// --- 2. CONFIGURACIÓN DE FIREBASE ---
 if (!admin.apps.length) {
     admin.initializeApp({
         credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)),
@@ -17,27 +12,38 @@ if (!admin.apps.length) {
     });
 }
 const db = admin.database();
-
-// --- 3. CONFIGURACIÓN DEL BOT ---
-const token = process.env.TELEGRAM_TOKEN;
-const bot = new TelegramBot(token, {polling: true});
-
-console.log("Bot listo en modo Web Service Gratis.");
+const bot = new TelegramBot(process.env.TELEGRAM_TOKEN, {polling: true});
 
 bot.on('message', (msg) => {
     const chatId = msg.chat.id;
+    const t = msg.text;
 
-    if (msg.text === "🔊 ACTIVAR SONIDO") {
+    // Lista de sonidos válidos
+    const listaSonidos = {
+        "🕺 MAMBO": "mambo",
+        "🔊 Sonido 1": "sonido1",
+        "🔊 Sonido 2": "sonido2",
+        "🔊 Sonido 3": "sonido3",
+        "🔊 Sonido 4": "sonido4",
+        "🔊 Sonido 5": "sonido5"
+    };
+
+    if (listaSonidos[t]) {
         db.ref('comando').set({
-            accion: 'reproducir',
+            archivo: listaSonidos[t],
             timestamp: Date.now()
         }).then(() => {
-            bot.sendMessage(chatId, "✅ Señal enviada.");
+            bot.sendMessage(chatId, `✅ Reproduciendo: ${t}`);
         });
     } else {
-        bot.sendMessage(chatId, "Panel de control:", {
+        bot.sendMessage(chatId, "Elige un sonido del panel:", {
             reply_markup: {
-                keyboard: [[{ text: "🔊 ACTIVAR SONIDO" }]],
+                keyboard: [
+                    [{ text: "🕺 MAMBO" }],
+                    [{ text: "🔊 Sonido 1" }, { text: "🔊 Sonido 2" }],
+                    [{ text: "🔊 Sonido 3" }, { text: "🔊 Sonido 4" }],
+                    [{ text: "🔊 Sonido 5" }]
+                ],
                 resize_keyboard: true
             }
         });
