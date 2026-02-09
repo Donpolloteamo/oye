@@ -16,11 +16,10 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
     <script>
-        const firebaseConfig = { databaseURL: "https://sound-nfc-default-rtdb.firebaseio.com/" };
+        const firebaseConfig = { databaseURL: "TU_URL_DE_FIREBASE_AQUI" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         
-        // Diccionario de sonidos
         const sonidos = {
             'mambo': new Audio('mambo.mp3'),
             'sonido1': new Audio('sonido1.mp3'),
@@ -35,23 +34,26 @@
         function conectar() {
             if (sistemaListo) return;
 
-            // Desbloqueamos todos los sonidos en silencio al tocar
+            // ACTIVACIÓN SILENCIOSA
             Object.values(sonidos).forEach(s => {
-                s.volume = 0;
-                s.play().then(() => { s.pause(); s.currentTime = 0; s.volume = 1; });
+                s.muted = true; // Lo ponemos en mudo primero
+                s.play().then(() => {
+                    s.pause();
+                    s.currentTime = 0;
+                    s.muted = false; // Quitamos el mudo para cuando llegue la señal
+                }).catch(e => console.log("Error activando:", e));
             });
 
             sistemaListo = true;
-            document.body.style.backgroundColor = "#080808";
-            console.log("Sistema multisonido listo.");
+            document.body.style.backgroundColor = "#050505"; // Cambio mínimo casi invisible
+            console.log("Sistema listo y en silencio.");
 
-            // Escuchar señal con el nombre del archivo
             db.ref('comando').on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (sistemaListo && data && sonidos[data.archivo]) {
                     const audio = sonidos[data.archivo];
                     audio.currentTime = 0;
-                    audio.play().catch(e => console.error(e));
+                    audio.play();
                 }
             });
         }
