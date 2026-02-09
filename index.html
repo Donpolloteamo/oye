@@ -2,57 +2,52 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bocina GitHub Remota</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title> </title>
     <style>
-        body { background-color: #0f172a; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; }
-        .card { background: #1e293b; padding: 2rem; border-radius: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        h1 { color: #38bdf8; }
-        .btn-activar { background-color: #0284c7; color: white; border: none; padding: 1rem 2rem; font-size: 1.2rem; font-weight: bold; border-radius: 0.5rem; cursor: pointer; }
-        #status { color: #94a3b8; margin-top: 10px; display: block; }
+        body, html { background-color: #000; margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
+        #pantalla { width: 100%; height: 100%; cursor: pointer; }
     </style>
 </head>
 <body>
-
-    <div class="card">
-        <h1>Bocina de GitHub</h1>
-        <button class="btn-activar" id="boton" onclick="iniciarReceptor()">🔊 ACTIVAR RECEPTOR</button>
-        <span id="status">Esperando activación...</span>
-    </div>
+    <div id="pantalla" onclick="conectar()"></div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
     <script>
-        // 1. CONFIGURACIÓN
-        const firebaseConfig = {
-            databaseURL: "https://sound-nfc-default-rtdb.firebaseio.com/" 
-        };
-
+        const firebaseConfig = { databaseURL: "https://sound-nfc-default-rtdb.firebaseio.com/" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+        
+        // Creamos el objeto de audio
+        const audio = new Audio('mambo.mp3');
+        let sistemaListo = false;
 
-        // 2. RUTA AL MP3 EN TU GITHUB
-        // Si el archivo se llama alarma.mp3 y está en la misma carpeta:
-        const audio = new Audio('mambo.mp3'); 
+        function conectar() {
+            if (sistemaListo) return;
 
-        function iniciarReceptor() {
-            document.getElementById('status').innerText = "✅ Conectado y escuchando Telegram...";
-            document.getElementById('boton').style.display = "none";
-
-            // "Despertamos" el audio (necesario para móviles)
+            // PRIMER TOQUE: Forzamos la carga y reproducción momentánea
             audio.play().then(() => {
                 audio.pause();
                 audio.currentTime = 0;
-            }).catch(e => console.log("Error de audio:", e));
+                sistemaListo = true;
+                console.log("Sistema armado y listo para sonar");
+                // Cambiamos el color un segundo para saber que funcionó el toque
+                document.body.style.backgroundColor = "#050505"; 
+            }).catch(error => console.log("Error al pedir permiso:", error));
 
-            // 3. ESCUCHAR A TELEGRAM
+            // Escuchamos a Firebase
             db.ref('comando').on('value', (snapshot) => {
                 const data = snapshot.val();
-                // Si el bot de Render mandó 'reproducir'
-                if (data && data.accion === 'reproducir') {
-                    console.log("Señal recibida!");
-                    audio.play().catch(error => console.error("Error:", error));
+                if (sistemaListo && data && data.accion === 'reproducir') {
+                    // Forzamos la reproducción inmediata
+                    const playPromise = audio.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(error => {
+                            console.log("El navegador bloqueó el audio al recibir la señal:", error);
+                        });
+                    }
                 }
             });
         }
