@@ -1,17 +1,61 @@
-<button onclick="activar()">ACTIVAR SISTEMA</button>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bocina GitHub Remota</title>
+    <style>
+        body { background-color: #0f172a; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; }
+        .card { background: #1e293b; padding: 2rem; border-radius: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        h1 { color: #38bdf8; }
+        .btn-activar { background-color: #0284c7; color: white; border: none; padding: 1rem 2rem; font-size: 1.2rem; font-weight: bold; border-radius: 0.5rem; cursor: pointer; }
+        #status { color: #94a3b8; margin-top: 10px; display: block; }
+    </style>
+</head>
+<body>
 
-<script>
-  // Configura tu Firebase aquí
-  firebase.initializeApp({ databaseURL: "TU_URL_DE_FIREBASE_AQUI" });
-  const audio = new Audio('URL_DE_TU_SONIDO.mp3');
+    <div class="card">
+        <h1>Bocina de GitHub</h1>
+        <button class="btn-activar" id="boton" onclick="iniciarReceptor()">🔊 ACTIVAR RECEPTOR</button>
+        <span id="status">Esperando activación...</span>
+    </div>
 
-  function activar() {
-    alert("¡Sistema listo!");
-    // Escuchar a Firebase en tiempo real
-    firebase.database().ref('comando').on('value', (snapshot) => {
-      audio.play();
-    });
-  }
-</script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <script>
+        // 1. CONFIGURACIÓN
+        const firebaseConfig = {
+            databaseURL: "https://sound-nfc-default-rtdb.firebaseio.com/" 
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // 2. RUTA AL MP3 EN TU GITHUB
+        // Si el archivo se llama alarma.mp3 y está en la misma carpeta:
+        const audio = new Audio('mambo.mp3'); 
+
+        function iniciarReceptor() {
+            document.getElementById('status').innerText = "✅ Conectado y escuchando Telegram...";
+            document.getElementById('boton').style.display = "none";
+
+            // "Despertamos" el audio (necesario para móviles)
+            audio.play().then(() => {
+                audio.pause();
+                audio.currentTime = 0;
+            }).catch(e => console.log("Error de audio:", e));
+
+            // 3. ESCUCHAR A TELEGRAM
+            db.ref('comando').on('value', (snapshot) => {
+                const data = snapshot.val();
+                // Si el bot de Render mandó 'reproducir'
+                if (data && data.accion === 'reproducir') {
+                    console.log("Señal recibida!");
+                    audio.play().catch(error => console.error("Error:", error));
+                }
+            });
+        }
+    </script>
+</body>
+</html>
